@@ -1,8 +1,11 @@
- 
         let selectedFiles = [];
 
         document.getElementById('pdfInput').addEventListener('change', (event) => {
             const newFiles = Array.from(event.target.files);
+            if (newFiles.length === 0) {
+                document.getElementById('status').textContent = 'No files selected.';
+                return;
+            }
             selectedFiles = [...selectedFiles, ...newFiles];
             updateFileList();
             document.getElementById('status').textContent = `${newFiles.length} file(s) added. Total: ${selectedFiles.length} file(s).`;
@@ -11,6 +14,10 @@
 
         function updateFileList() {
             const fileListDiv = document.getElementById('fileList');
+            if (!fileListDiv) {
+                document.getElementById('status').textContent = 'Error: File list container not found.';
+                return;
+            }
             fileListDiv.innerHTML = '';
             if (selectedFiles.length > 0) {
                 const ul = document.createElement('ul');
@@ -24,6 +31,8 @@
                 });
                 fileListDiv.appendChild(ul);
                 addDragAndDropListeners();
+            } else {
+                fileListDiv.innerHTML = '<p>No files selected.</p>';
             }
         }
 
@@ -115,14 +124,18 @@
                 const blob = new Blob([pdfBytes], { type: 'application/pdf' });
                 const url = URL.createObjectURL(blob);
 
+                // Use custom file name
+                const defaultFileName = 'alltools.pdf';
                 downloadLink.href = url;
+                downloadLink.setAttribute('download', defaultFileName);
+                downloadLink.textContent = `Download ${defaultFileName}`;
                 downloadLink.style.display = 'inline-block';
-                status.textContent = 'PDFs merged successfully! Click the download link to save or wait for automatic download.';
+                status.textContent = `PDFs merged successfully! Click the download link to save ${defaultFileName} or wait for automatic download.`;
 
                 try {
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = 'merged.pdf';
+                    link.download = defaultFileName;
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
